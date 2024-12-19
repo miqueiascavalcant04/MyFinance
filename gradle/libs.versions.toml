@@ -1,5 +1,6 @@
 [versions]
 agp = "8.5.1"
+datastorePreferences = "1.0.0"
 foundation = "1.5.3"
 kotlin = "1.9.0"
 coreKtx = "1.15.0"
@@ -11,13 +12,16 @@ activityCompose = "1.9.3"
 composeBom = "2024.04.01"
 material = "1.7.6"
 material3 = "1.0.0"
+sqlite = "2.4.0"
 ui = "1.7.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "foundation" }
 androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material" }
+androidx-sqlite = { module = "androidx.sqlite:sqlite", version.ref = "sqlite" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

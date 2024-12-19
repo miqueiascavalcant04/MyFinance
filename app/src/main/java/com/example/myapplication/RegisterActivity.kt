@@ -1,8 +1,8 @@
 package com.example.myapplication
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -15,13 +15,28 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 
 class RegisterActivity : ComponentActivity() {
+    private lateinit var dbHelper: UserDatabaseHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
+                // Inicializando o banco de dados
+                dbHelper = UserDatabaseHelper(this)
+
                 RegisterScreen(onRegisterSuccess = {
-                    // Simula o sucesso do cadastro
-                    Toast.makeText(this, "Cadastro realizado com sucesso", Toast.LENGTH_SHORT).show()
+                    val name = "Nome Exemplo"
+                    val email = "email@exemplo.com"
+                    val password = "senha"
+
+                    // Verificando se o usuário já existe
+                    if (!dbHelper.checkIfUserExists(email)) {
+                        // Cadastrando o usuário
+                        dbHelper.insertUser(name, email, password)
+                        Toast.makeText(this, "Cadastro realizado com sucesso", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this, "Este e-mail já está cadastrado", Toast.LENGTH_SHORT).show()
+                    }
                 })
             }
         }
@@ -36,6 +51,7 @@ fun RegisterScreen(onRegisterSuccess: () -> Unit) {
     var confirmPassword by remember { mutableStateOf("") }
 
     val context = LocalContext.current
+    val dbHelper = UserDatabaseHelper(context)
 
     Column(
         modifier = Modifier
@@ -90,7 +106,17 @@ fun RegisterScreen(onRegisterSuccess: () -> Unit) {
             onClick = {
                 if (name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) {
                     if (password == confirmPassword) {
-                        onRegisterSuccess() // Chama a função de sucesso
+                        // Verificar se o usuário já existe
+                        if (!dbHelper.checkIfUserExists(email)) {
+                            dbHelper.insertUser(name, email, password) // Salva o novo usuário
+                            onRegisterSuccess() // Chama a função de sucesso
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Usuário já cadastrado.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     } else {
                         Toast.makeText(
                             context,

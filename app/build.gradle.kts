@@ -50,6 +50,8 @@ android {
 }
 
 dependencies {
+    implementation (libs.androidx.sqlite)
+    implementation(libs.androidx.datastore.preferences)
     implementation (libs.material3)
     implementation (libs.androidx.material.icons.extended)
     implementation (libs.ui)
