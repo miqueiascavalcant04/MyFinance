@@ -30,8 +30,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 class LoginActivity : ComponentActivity() {
+    private lateinit var userDatabaseHelper: UserDatabaseHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        userDatabaseHelper = UserDatabaseHelper(this) // Inicializa o banco de dados
         setContent {
             MaterialTheme {
                 LoginScreen(
@@ -40,6 +43,10 @@ class LoginActivity : ComponentActivity() {
                         val intent = Intent(this, HomeActivity::class.java)
                         startActivity(intent)
                         finish()  // Finaliza a LoginActivity para que o usuário não possa voltar para ela
+                    },
+                    onLoginFailed = {
+                        // Exibe uma mensagem de erro caso o login falhe
+                        Toast.makeText(this, "Email ou senha inválidos", Toast.LENGTH_SHORT).show()
                     }
                 )
             }
@@ -48,7 +55,7 @@ class LoginActivity : ComponentActivity() {
 }
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit = {}) {
+fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {}) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -87,7 +94,13 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}) {
         Button(
             onClick = {
                 if (email.isNotEmpty() && password.isNotEmpty()) {
-                    onLoginSuccess()
+                    // Verifica o login no banco de dados
+                    val dbHelper = UserDatabaseHelper(context)
+                    if (dbHelper.authenticateUser(email, password)) {
+                        onLoginSuccess()  // Chama a função de sucesso no login
+                    } else {
+                        onLoginFailed()  // Chama a função de falha no login
+                    }
                 } else {
                     Toast.makeText(
                         context,

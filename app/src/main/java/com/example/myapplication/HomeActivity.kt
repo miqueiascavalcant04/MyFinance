@@ -6,47 +6,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 val Context.dataStore by preferencesDataStore(name = "settings")
@@ -165,11 +141,9 @@ fun SettingsScreen() {
     var userName by remember { mutableStateOf("João da Silva") }
     var showSnackbar by remember { mutableStateOf(false) }
 
-    // Coletando o estado de "modo escuro" com collectAsState()
     val darkModeState = getDarkMode(dataStore)
-    val isDarkMode by darkModeState.collectAsState(initial = false) // Aqui, usando collectAsState para obter o valor do Flow
+    val isDarkMode by darkModeState.collectAsState(initial = false)
 
-    // Usando a função de atualizar o modo escuro
     val coroutineScope = rememberCoroutineScope()
     val updateDarkMode: (Boolean) -> Unit = { newValue ->
         coroutineScope.launch {
@@ -192,9 +166,7 @@ fun SettingsScreen() {
         Text("Modo Escuro")
         Switch(
             checked = isDarkMode,
-            onCheckedChange = { newValue ->
-                updateDarkMode(newValue)
-            }
+            onCheckedChange = { newValue -> updateDarkMode(newValue) }
         )
         Spacer(modifier = Modifier.height(20.dp))
         Text("Nome de Usuário")
@@ -205,9 +177,7 @@ fun SettingsScreen() {
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = {
-            showSnackbar = true
-        }) {
+        Button(onClick = { showSnackbar = true }) {
             Text("Salvar Configurações")
         }
         if (showSnackbar) {

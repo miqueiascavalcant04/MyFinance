@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 
 class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -44,7 +45,12 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             put(COLUMN_EMAIL, email)
             put(COLUMN_PASSWORD, password)
         }
-        db.insert(TABLE_NAME, null, values)
+        val userId = db.insert(TABLE_NAME, null, values)
+        if (userId == -1L) {
+            Log.e("UserDatabaseHelper", "Erro ao inserir usuário.")
+        } else {
+            Log.d("UserDatabaseHelper", "Usuário inserido com sucesso: ID = $userId")
+        }
         db.close()
     }
 
@@ -60,9 +66,27 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             null,
             null
         )
-        val exists = cursor.count > 0
+        val exists = cursor.moveToFirst()  // Verifica se há algum resultado
         cursor.close()
         db.close()
         return exists
+    }
+
+    // Função para autenticar um usuário (verificando e-mail e senha)
+    fun authenticateUser(email: String, password: String): Boolean {
+        val db = readableDatabase
+        val cursor = db.query(
+            TABLE_NAME,
+            arrayOf(COLUMN_ID),
+            "$COLUMN_EMAIL = ? AND $COLUMN_PASSWORD = ?",
+            arrayOf(email, password),
+            null,
+            null,
+            null
+        )
+        val isAuthenticated = cursor.moveToFirst()  // Verifica se o usuário existe e tem a senha correta
+        cursor.close()
+        db.close()
+        return isAuthenticated
     }
 }
