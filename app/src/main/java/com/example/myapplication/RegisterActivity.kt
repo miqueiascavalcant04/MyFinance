@@ -25,18 +25,8 @@ class RegisterActivity : ComponentActivity() {
                 dbHelper = UserDatabaseHelper(this)
 
                 RegisterScreen(onRegisterSuccess = {
-                    val name = "Nome Exemplo"
-                    val email = "email@exemplo.com"
-                    val password = "senha"
-
-                    // Verificando se o usuário já existe
-                    if (!dbHelper.checkIfUserExists(email)) {
-                        // Cadastrando o usuário
-                        dbHelper.insertUser(name, email, password)
-                        Toast.makeText(this, "Cadastro realizado com sucesso", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this, "Este e-mail já está cadastrado", Toast.LENGTH_SHORT).show()
-                    }
+                    Toast.makeText(this, "Cadastro realizado com sucesso", Toast.LENGTH_SHORT).show()
+                    finish()
                 })
             }
         }

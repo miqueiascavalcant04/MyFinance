@@ -1,12 +1,11 @@
 package com.example.myapplication
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
@@ -17,15 +16,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.datastore.preferences.core.*
-import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-
-val Context.dataStore by preferencesDataStore(name = "settings")
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,6 +86,18 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
 
 @Composable
 fun HomePageScreen() {
+    val expenseCategories = listOf("Lazer", "Família", "Saúde", "Educação")
+    val incomeCategories = listOf("Salário", "Freelance", "Investimentos", "Outro")
+
+    val expenses = remember { mutableStateMapOf<String, MutableList<Float>>() }
+    val incomes = remember { mutableStateMapOf<String, MutableList<Float>>() }
+
+    var selectedCategory by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf("") }
+    var isIncome by remember { mutableStateOf(false) } // Flag para distinguir receitas de despesas
+    var showDialog by remember { mutableStateOf(false) }
+    var isCategorySelected by remember { mutableStateOf(false) } // Flag para indicar se a categoria foi selecionada
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -102,12 +106,131 @@ fun HomePageScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Bem-vindo à Home!", style = MaterialTheme.typography.titleLarge)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Selecione uma categoria e insira o valor:")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Exibição dos botões para despesas e receitas
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = { isIncome = false; showDialog = true },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Adicionar Despesa")
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(
+                onClick = { isIncome = true; showDialog = true },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Adicionar Receita")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Despesas por Categoria:")
+        expenseCategories.forEach { category ->
+            val totalExpense = expenses[category]?.sum() ?: 0f
+            Text("$category: R$ %.2f".format(totalExpense))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Receitas por Categoria:")
+        incomeCategories.forEach { category ->
+            val totalIncome = incomes[category]?.sum() ?: 0f
+            Text("$category: R$ %.2f".format(totalIncome))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        val totalExpenses = expenses.values.flatten().sum()
+        val totalIncomes = incomes.values.flatten().sum()
+        Text("Total de Despesas: R$ %.2f".format(totalExpenses))
+        Text("Total de Receitas: R$ %.2f".format(totalIncomes))
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(if (isIncome) "Adicionar Receita" else "Adicionar Despesa") },
+            text = {
+                Column {
+                    if (!isCategorySelected) {
+                        if (isIncome) {
+                            // Exibição de categorias de receitas
+                            Text("Escolha uma categoria de receita:")
+                            incomeCategories.forEach { category ->
+                                Button(
+                                    onClick = {
+                                        selectedCategory = category
+                                        isCategorySelected = true
+                                    },
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                ) {
+                                    Text(category)
+                                }
+                            }
+                        } else {
+                            // Exibição de categorias de despesas
+                            Text("Escolha uma categoria de despesa:")
+                            expenseCategories.forEach { category ->
+                                Button(
+                                    onClick = {
+                                        selectedCategory = category
+                                        isCategorySelected = true
+                                    },
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                ) {
+                                    Text(category)
+                                }
+                            }
+                        }
+                    } else {
+                        // Campo para inserir o valor
+                        TextField(
+                            value = amount,
+                            onValueChange = { amount = it },
+                            label = { Text("Digite o valor") }
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val amountValue = amount.toFloatOrNull()
+                    if (amountValue != null && amountValue > 0 && selectedCategory.isNotEmpty()) {
+                        if (isIncome) {
+                            incomes.getOrPut(selectedCategory) { mutableListOf() }.add(amountValue)
+                        } else {
+                            expenses.getOrPut(selectedCategory) { mutableListOf() }.add(amountValue)
+                        }
+                    }
+                    amount = ""
+                    isCategorySelected = false
+                    showDialog = false
+                }) {
+                    Text("Salvar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    isCategorySelected = false
+                    showDialog = false
+                }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
 @Composable
 fun DashboardScreen() {
-    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -115,97 +238,15 @@ fun DashboardScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            "Bem-vindo ao Dashboard",
-            style = MaterialTheme.typography.headlineMedium
-        )
+        Text("Bem-vindo ao Dashboard", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            "Saldo: R$ 1000,00",
-            style = MaterialTheme.typography.bodyLarge
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = {
-            val intent = Intent(context, LoginActivity::class.java)
-            context.startActivity(intent)
-        }) {
-            Text("Sair")
-        }
+        Text("Saldo: R$ 1000,00", style = MaterialTheme.typography.bodyLarge)
     }
 }
 
 @Composable
 fun SettingsScreen() {
-    val context = LocalContext.current
-    val dataStore = context.dataStore
-    var userName by remember { mutableStateOf("João da Silva") }
-    var showSnackbar by remember { mutableStateOf(false) }
-
-    val darkModeState = getDarkMode(dataStore)
-    val isDarkMode by darkModeState.collectAsState(initial = false)
-
-    val coroutineScope = rememberCoroutineScope()
-    val updateDarkMode: (Boolean) -> Unit = { newValue ->
-        coroutineScope.launch {
-            saveDarkMode(dataStore, newValue)
-        }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
-    ) {
-        Text(
-            "Configurações",
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        Text("Modo Escuro")
-        Switch(
-            checked = isDarkMode,
-            onCheckedChange = { newValue -> updateDarkMode(newValue) }
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        Text("Nome de Usuário")
-        TextField(
-            value = userName,
-            onValueChange = { userName = it },
-            label = { Text("Digite seu nome") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        Button(onClick = { showSnackbar = true }) {
-            Text("Salvar Configurações")
-        }
-        if (showSnackbar) {
-            Snackbar(
-                action = {
-                    TextButton(onClick = { showSnackbar = false }) {
-                        Text("Fechar")
-                    }
-                }
-            ) {
-                Text("Configurações salvas com sucesso!")
-            }
-        }
-    }
-}
-
-@Composable
-fun getDarkMode(dataStore: androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences>): Flow<Boolean> {
-    val darkModeFlow: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[booleanPreferencesKey("dark_mode")] ?: false
-    }
-    return darkModeFlow
-}
-
-suspend fun saveDarkMode(dataStore: androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences>, value: Boolean) {
-    dataStore.edit { preferences ->
-        preferences[booleanPreferencesKey("dark_mode")] = value
-    }
+    Text("Configurações", style = MaterialTheme.typography.headlineMedium)
 }
 
 @Preview(showBackground = true)
