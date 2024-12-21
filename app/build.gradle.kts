@@ -50,6 +50,10 @@ android {
 }
 
 dependencies {
+    implementation (libs.core)
+    implementation (libs.androidx.lifecycle.runtime.ktx.v260)
+    implementation (libs.androidx.lifecycle.viewmodel.compose)
+    implementation (libs.androidx.foundation.v140)
     implementation (libs.androidx.sqlite)
     implementation(libs.androidx.datastore.preferences)
     implementation (libs.material3)

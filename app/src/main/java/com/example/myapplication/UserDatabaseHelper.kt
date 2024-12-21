@@ -72,6 +72,30 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         return exists
     }
 
+    fun getUserNameByEmail(email: String): String? {
+        val db = readableDatabase
+        val cursor = db.query(
+            TABLE_NAME,
+            arrayOf(COLUMN_NAME),
+            "$COLUMN_EMAIL = ?",
+            arrayOf(email),
+            null,
+            null,
+            null
+        )
+
+        var userName: String? = null
+        if (cursor.moveToFirst()) {
+            val columnIndex = cursor.getColumnIndex(COLUMN_NAME)
+            if (columnIndex >= 0) {
+                userName = cursor.getString(columnIndex)
+            }
+        }
+        cursor.close()
+        db.close()
+        return userName
+    }
+
     // Função para autenticar um usuário (verificando e-mail e senha)
     fun authenticateUser(email: String, password: String): Boolean {
         val db = readableDatabase

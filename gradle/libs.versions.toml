@@ -1,7 +1,10 @@
 [versions]
 agp = "8.5.1"
+calendarCompose = "0.2.0"
+core = "1.6.2"
 datastorePreferences = "1.0.0"
 foundation = "1.5.3"
+foundationVersion = "1.4.0"
 kotlin = "1.9.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -10,8 +13,12 @@ espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
 composeBom = "2024.04.01"
+lifecycleRuntimeKtxVersion = "2.6.0"
 material = "1.7.6"
 material3 = "1.0.0"
+materialdatetimepicker = "4.2.3"
+mpandroidchart = "v3.1.0"
+repo = "VERSION"
 sqlite = "2.4.0"
 ui = "1.7.6"
 
@@ -19,9 +26,14 @@ ui = "1.7.6"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "foundation" }
+androidx-foundation-v140 = { module = "androidx.compose.foundation:foundation", version.ref = "foundationVersion" }
+androidx-lifecycle-runtime-ktx-v260 = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtxVersion" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material" }
 androidx-sqlite = { module = "androidx.sqlite:sqlite", version.ref = "sqlite" }
+calendar-compose = { module = "com.github.kizitonwose:calendar-compose", version.ref = "calendarCompose" }
+core = { module = "com.patrykandpatrick.vico:core", version.ref = "core" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -36,6 +48,9 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+materialdatetimepicker = { module = "com.github.wdullaer:MaterialDateTimePicker", version.ref = "materialdatetimepicker" }
+mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
+repo = { module = "com.github.USER:REPO", version.ref = "repo" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 
 [plugins]

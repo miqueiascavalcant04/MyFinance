@@ -1,29 +1,33 @@
 package com.example.myapplication
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.myapplication.ui.theme.MyApplicationTheme
 
 class RegisterActivity : ComponentActivity() {
     private lateinit var dbHelper: UserDatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        dbHelper = UserDatabaseHelper(this) // Inicializa o banco de dados
         setContent {
-            MaterialTheme {
-                // Inicializando o banco de dados
-                dbHelper = UserDatabaseHelper(this)
-
+            MyApplicationTheme {
                 RegisterScreen(onRegisterSuccess = {
                     Toast.makeText(this, "Cadastro realizado com sucesso", Toast.LENGTH_SHORT).show()
                     finish()
@@ -50,44 +54,78 @@ fun RegisterScreen(onRegisterSuccess: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Cadastro", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = "Cadastro",
+            style = MaterialTheme.typography.h5.copy(
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colors.primary
+            )
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextField(
+        OutlinedTextField(
             value = name,
             onValueChange = { name = it },
             label = { Text("Nome") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp)),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = Color.Black,
+                focusedBorderColor = MaterialTheme.colors.primary,
+                unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+            )
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextField(
+        OutlinedTextField(
             value = email,
             onValueChange = { email = it },
             label = { Text("E-mail") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp)),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = Color.Black,
+                focusedBorderColor = MaterialTheme.colors.primary,
+                unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+            )
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextField(
+        OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Senha") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp)),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = Color.Black,
+                focusedBorderColor = MaterialTheme.colors.primary,
+                unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+            )
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextField(
+        OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
             label = { Text("Confirmar Senha") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp)),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = Color.Black,
+                focusedBorderColor = MaterialTheme.colors.primary,
+                unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -96,10 +134,9 @@ fun RegisterScreen(onRegisterSuccess: () -> Unit) {
             onClick = {
                 if (name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) {
                     if (password == confirmPassword) {
-                        // Verificar se o usuário já existe
                         if (!dbHelper.checkIfUserExists(email)) {
-                            dbHelper.insertUser(name, email, password) // Salva o novo usuário
-                            onRegisterSuccess() // Chama a função de sucesso
+                            dbHelper.insertUser(name, email, password)
+                            onRegisterSuccess()
                         } else {
                             Toast.makeText(
                                 context,
@@ -122,19 +159,22 @@ fun RegisterScreen(onRegisterSuccess: () -> Unit) {
                     ).show()
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
         ) {
-            Text("Cadastrar")
+            Text("Cadastrar", color = Color.White, fontSize = 16.sp)
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Botão de texto para voltar à tela de login
         TextButton(onClick = {
             val intent = Intent(context, LoginActivity::class.java)
-            context.startActivity(intent)  // Navega de volta para a tela de login
+            context.startActivity(intent)
         }) {
-            Text("Já tem uma conta? Faça login")
+            Text("Já tem uma conta? Faça login", color = MaterialTheme.colors.primary)
         }
     }
 }

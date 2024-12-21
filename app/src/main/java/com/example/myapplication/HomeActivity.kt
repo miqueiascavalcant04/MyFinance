@@ -1,38 +1,87 @@
 package com.example.myapplication
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                HomeScreen()
+                HomeScreen(context = this)
             }
         }
     }
 }
 
+class FinanceViewModel : ViewModel() {
+    var totalExpenses by mutableStateOf(1500f)
+    var totalIncomes by mutableStateOf(3500f)
+    var expenses = mutableStateMapOf<String, MutableList<Float>>()
+    var incomes = mutableStateMapOf<String, MutableList<Float>>()
+
+    fun addExpense(category: String, amount: Float) {
+        expenses.getOrPut(category) { mutableListOf() }.add(amount)
+        totalExpenses += amount
+    }
+
+    fun addIncome(category: String, amount: Float) {
+        incomes.getOrPut(category) { mutableListOf() }.add(amount)
+        totalIncomes += amount
+    }
+}
+
 @Composable
-fun HomeScreen() {
+fun HomeScreen(context: Context) {
     var selectedItem by remember { mutableStateOf(0) }
+    val email = "usuario@example.com" // Substitua pelo e-mail real que você vai usar após login
+    val userName by remember { mutableStateOf(getUserNameByEmail(context, email)) }
 
     Scaffold(
         bottomBar = {
@@ -48,9 +97,9 @@ fun HomeScreen() {
         ) {
             AnimatedContent(targetState = selectedItem) { targetScreen ->
                 when (targetScreen) {
-                    0 -> HomePageScreen()
+                    0 -> HomePageScreen(userName)
                     1 -> DashboardScreen()
-                    2 -> SettingsScreen()
+                    2 -> SettingsScreen(context)
                 }
             }
         }
@@ -85,33 +134,97 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
 }
 
 @Composable
-fun HomePageScreen() {
-    val expenseCategories = listOf("Lazer", "Família", "Saúde", "Educação")
-    val incomeCategories = listOf("Salário", "Freelance", "Investimentos", "Outro")
+fun HomePageScreen(userName: String?) {
+    val financeViewModel: FinanceViewModel = viewModel()
 
-    val expenses = remember { mutableStateMapOf<String, MutableList<Float>>() }
-    val incomes = remember { mutableStateMapOf<String, MutableList<Float>>() }
-
-    var selectedCategory by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var isIncome by remember { mutableStateOf(false) } // Flag para distinguir receitas de despesas
-    var showDialog by remember { mutableStateOf(false) }
-    var isCategorySelected by remember { mutableStateOf(false) } // Flag para indicar se a categoria foi selecionada
+    val balance = financeViewModel.totalIncomes - financeViewModel.totalExpenses
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Bem-vindo à Home!", style = MaterialTheme.typography.titleLarge)
+        Text("Bem-vindo, ${userName ?: "Usuário"}!", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Selecione uma categoria e insira o valor:")
+
+        // Resumo financeiro
+        Text("Resumo das suas finanças", style = MaterialTheme.typography.titleLarge)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Exibição dos botões para despesas e receitas
+        // Exibindo saldo total
+        Text("Saldo Total: R$ %.2f".format(balance), style = MaterialTheme.typography.headlineSmall)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Exibindo total de despesas
+        Text("Total de Despesas: R$ %.2f".format(financeViewModel.totalExpenses))
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Exibindo total de receitas
+        Text("Total de Receitas: R$ %.2f".format(financeViewModel.totalIncomes))
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Instruções ou ações rápidas, como visualizar o dashboard
+        Button(
+            onClick = { /* Ação para ir para o Dashboard */ },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text("Ver Dashboard")
+        }
+    }
+}
+
+@Composable
+fun DashboardScreen() {
+    val financeViewModel: FinanceViewModel = viewModel()
+
+    val expenseCategories = listOf("Lazer", "Família", "Saúde", "Educação")
+    val incomeCategories = listOf("Salário", "Freelance", "Investimentos", "Outro")
+
+    var selectedCategory by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf("") }
+    var isIncome by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+    var isCategorySelected by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Dashboard", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val totalExpenses = financeViewModel.expenses.values.flatten().sum()
+        val totalIncomes = financeViewModel.incomes.values.flatten().sum()
+
+        // Barra de progresso para despesas
+        Text("Total de Despesas: R$ %.2f".format(totalExpenses))
+        LinearProgressIndicator(
+            progress = { totalExpenses / (totalExpenses + totalIncomes) },
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.error,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Barra de progresso para receitas
+        Text("Total de Receitas: R$ %.2f".format(totalIncomes))
+        LinearProgressIndicator(
+            progress = { totalIncomes / (totalExpenses + totalIncomes) },
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.primary,
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Adicionar receita ou despesa
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -132,26 +245,6 @@ fun HomePageScreen() {
                 Text("Adicionar Receita")
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Despesas por Categoria:")
-        expenseCategories.forEach { category ->
-            val totalExpense = expenses[category]?.sum() ?: 0f
-            Text("$category: R$ %.2f".format(totalExpense))
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Receitas por Categoria:")
-        incomeCategories.forEach { category ->
-            val totalIncome = incomes[category]?.sum() ?: 0f
-            Text("$category: R$ %.2f".format(totalIncome))
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        val totalExpenses = expenses.values.flatten().sum()
-        val totalIncomes = incomes.values.flatten().sum()
-        Text("Total de Despesas: R$ %.2f".format(totalExpenses))
-        Text("Total de Receitas: R$ %.2f".format(totalIncomes))
     }
 
     if (showDialog) {
@@ -162,7 +255,6 @@ fun HomePageScreen() {
                 Column {
                     if (!isCategorySelected) {
                         if (isIncome) {
-                            // Exibição de categorias de receitas
                             Text("Escolha uma categoria de receita:")
                             incomeCategories.forEach { category ->
                                 Button(
@@ -176,7 +268,6 @@ fun HomePageScreen() {
                                 }
                             }
                         } else {
-                            // Exibição de categorias de despesas
                             Text("Escolha uma categoria de despesa:")
                             expenseCategories.forEach { category ->
                                 Button(
@@ -191,7 +282,6 @@ fun HomePageScreen() {
                             }
                         }
                     } else {
-                        // Campo para inserir o valor
                         TextField(
                             value = amount,
                             onValueChange = { amount = it },
@@ -205,9 +295,9 @@ fun HomePageScreen() {
                     val amountValue = amount.toFloatOrNull()
                     if (amountValue != null && amountValue > 0 && selectedCategory.isNotEmpty()) {
                         if (isIncome) {
-                            incomes.getOrPut(selectedCategory) { mutableListOf() }.add(amountValue)
+                            financeViewModel.addIncome(selectedCategory, amountValue)
                         } else {
-                            expenses.getOrPut(selectedCategory) { mutableListOf() }.add(amountValue)
+                            financeViewModel.addExpense(selectedCategory, amountValue)
                         }
                     }
                     amount = ""
@@ -230,27 +320,80 @@ fun HomePageScreen() {
 }
 
 @Composable
-fun DashboardScreen() {
+fun SettingsScreen(context: Context) {
+    var isDarkTheme by remember { mutableStateOf(false) }
+    var email by remember { mutableStateOf("usuario@example.com") } // Substitua pelo email do usuário logado
+    var newEmail by remember { mutableStateOf("") }
+    var isEditingEmail by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.Start
     ) {
-        Text("Bem-vindo ao Dashboard", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Saldo: R$ 1000,00", style = MaterialTheme.typography.bodyLarge)
+        Text("Configurações", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Troca de tema
+        Text("Tema:")
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text("Claro")
+            Switch(
+                checked = isDarkTheme,
+                onCheckedChange = { isDarkTheme = it }
+            )
+            Text("Escuro")
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // E-mail
+        Text("E-mail:")
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text(email)
+            IconButton(onClick = { isEditingEmail = true }) {
+                Icon(Icons.Filled.Edit, contentDescription = "Editar E-mail")
+            }
+        }
+
+        if (isEditingEmail) {
+            OutlinedTextField(
+                value = newEmail,
+                onValueChange = { newEmail = it },
+                label = { Text("Novo E-mail") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    email = newEmail
+                    isEditingEmail = false
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Salvar E-mail")
+            }
+        }
     }
 }
 
 @Composable
-fun SettingsScreen() {
-    Text("Configurações", style = MaterialTheme.typography.headlineMedium)
+@Preview(showBackground = true)
+fun PreviewHomeScreen() {
+    MaterialTheme {
+        HomeScreen(context = LocalContext.current)
+    }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    HomeScreen()
+fun getUserNameByEmail(context: Context, email: String): String {
+    // Aqui você pode adicionar uma lógica para buscar o nome do usuário pelo e-mail
+    return "João Silva" // Exemplo de nome retornado
 }

@@ -10,12 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,6 +51,7 @@ class LoginActivity : ComponentActivity() {
 fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {}) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -63,12 +59,12 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {})
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .background(MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colors.background),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.r), // Substitua pelo seu recurso de imagem
+            painter = painterResource(id = R.drawable.r),
             contentDescription = null,
             modifier = Modifier
                 .size(100.dp)
@@ -79,46 +75,42 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {})
 
         Text(
             "Login",
-            style = MaterialTheme.typography.headlineMedium.copy(
+            style = MaterialTheme.typography.h5.copy(
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colors.primary
             )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextField(
+        OutlinedTextField(
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surface),
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.White,
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                .clip(RoundedCornerShape(8.dp)),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = Color.Black,
+                focusedBorderColor = MaterialTheme.colors.primary,
+                unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
             )
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextField(
+        OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Senha") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surface),
-            colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.White,
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                .clip(RoundedCornerShape(8.dp)),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = Color.Black,
+                focusedBorderColor = MaterialTheme.colors.primary,
+                unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
             )
         )
 
@@ -127,13 +119,14 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {})
         Button(
             onClick = {
                 if (email.isNotEmpty() && password.isNotEmpty()) {
-                    // Verifica o login no banco de dados
+                    loading = true
                     val dbHelper = UserDatabaseHelper(context)
                     if (dbHelper.authenticateUser(email, password)) {
                         onLoginSuccess()
                     } else {
                         onLoginFailed()
                     }
+                    loading = false
                 } else {
                     Toast.makeText(context, "Preencha todos os campos.", Toast.LENGTH_SHORT).show()
                 }
@@ -142,9 +135,13 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {})
                 .fillMaxWidth()
                 .height(50.dp)
                 .clip(RoundedCornerShape(12.dp)),
-            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.primary)
+            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
         ) {
-            Text("Entrar", color = Color.White, fontSize = 16.sp)
+            if (loading) {
+                CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+            } else {
+                Text("Entrar", color = Color.White, fontSize = 16.sp)
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -153,7 +150,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {})
             val intent = Intent(context, RegisterActivity::class.java)
             context.startActivity(intent)
         }) {
-            Text("Criar uma conta", color = MaterialTheme.colorScheme.primary)
+            Text("Criar uma conta", color = MaterialTheme.colors.primary)
         }
     }
 }
