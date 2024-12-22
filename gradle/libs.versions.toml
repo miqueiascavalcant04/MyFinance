@@ -22,6 +22,7 @@ mpandroidchartVersion = "v3.0.3"
 repo = "VERSION"
 sqlite = "2.4.0"
 ui = "1.7.6"
+materialVersion = "1.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +55,7 @@ mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "
 mpandroidchart-vv303 = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchartVersion" }
 repo = { module = "com.github.USER:REPO", version.ref = "repo" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
+material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

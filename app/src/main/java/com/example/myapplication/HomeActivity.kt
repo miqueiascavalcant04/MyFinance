@@ -9,7 +9,9 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +19,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.BottomNavigation
@@ -30,6 +34,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -113,7 +118,6 @@ fun HomeScreen(context: Context) {
         }
     }
 }
-
 @Composable
 fun UserProfileScreen(userName: String?) {
     Column(
@@ -150,13 +154,11 @@ fun UserProfileScreen(userName: String?) {
         )
     }
 }
-
 @Composable
 fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
     val gradient = Brush.horizontalGradient(
         colors = listOf(Color(0xFF2196F3), Color(0xFF00BCD4)) // Gradiente de roxo
     )
-
     BottomNavigation(
         backgroundColor = Color.Transparent, // Tornar o fundo transparente para o gradiente
         contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -188,10 +190,18 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
         )
     }
 }
-
 @Composable
 fun HomePageScreen(userName: String?) {
     val financeViewModel: FinanceViewModel = viewModel()
+
+    // Itens para a Grid
+    val gridItems = listOf(
+        "Histórico de Transações",
+        "Relatório de Despesas",
+        "Definir Orçamento",
+        "Estatísticas",
+        "Configurações"
+    )
 
     Column(
         modifier = Modifier
@@ -200,49 +210,80 @@ fun HomePageScreen(userName: String?) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Saudação ao usuário
-        Text("Bem-vindo, ${userName ?: "Usuário"}!", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Exemplo de um resumo rápido (última receita ou despesa)
-        Text("Última Receita: R$ %.2f".format(financeViewModel.totalIncomes), style = MaterialTheme.typography.bodyLarge)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Última Despesa: R$ %.2f".format(financeViewModel.totalExpenses), style = MaterialTheme.typography.bodyLarge)
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Botões para adicionar nova receita ou despesa
         Text(
-            "Adicionar Receita",
-            style = MaterialTheme.typography.bodyLarge.copy(
+            "Bem-vindo, ${userName ?: "Usuário"}!",
+            style = MaterialTheme.typography.headlineMedium.copy(
                 color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                textDecoration = TextDecoration.Underline
-            ),
-            modifier = Modifier
-                .clickable {
-                    // Ação para adicionar nova receita
-                }
-                .padding(16.dp)
+                fontWeight = FontWeight.Bold
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Informações financeiras
         Text(
-            "Adicionar Despesa",
-            style = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.error,
-                fontWeight = FontWeight.Bold,
-                textDecoration = TextDecoration.Underline
-            ),
-            modifier = Modifier
-                .clickable {
-                    // Ação para adicionar nova despesa
-                }
-                .padding(16.dp)
+            "Última Receita: R$ %.2f".format(financeViewModel.totalIncomes),
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.secondary)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "Última Despesa: R$ %.2f".format(financeViewModel.totalExpenses),
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.error)
         )
 
-        // Dica financeira (opcional)
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Dica do dia: Faça um orçamento mensal para controlar seus gastos!", style = MaterialTheme.typography.bodyMedium)
+
+        // Grid de opções
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2), // Definindo 2 colunas
+            contentPadding = PaddingValues(8.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(gridItems.size) { index ->  // Corrigido para usar o índice da lista
+                val item = gridItems[index] // Acessando o item pelo índice
+                Card(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clickable {
+                            when (item) {
+                                "Histórico de Transações" -> {
+                                    // Ação para exibir o histórico de transações
+                                }
+                                "Relatório de Despesas" -> {
+                                    // Ação para exibir o relatório de despesas
+                                }
+                                "Definir Orçamento" -> {
+                                    // Ação para definir o orçamento mensal
+                                }
+                                "Estatísticas" -> {
+                                    // Ação para exibir as estatísticas financeiras
+                                }
+                                "Configurações" -> {
+                                    // Ação para acessar configurações do app
+                                }
+                            }
+                        },
+                    elevation = 8.dp,  // Aumentando a elevação do card para um destaque maior
+                    shape = MaterialTheme.shapes.medium // Bordas arredondadas
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .padding(8.dp) // Adicionando padding extra no box
+                    ) {
+                        Text(
+                            text = item,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Medium
+                            ),
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -271,10 +312,8 @@ fun DashboardScreen() {
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-
         val totalExpenses = financeViewModel.expenses.values.flatten().sum()
         val totalIncomes = financeViewModel.incomes.values.flatten().sum()
-
         // Barra de progresso para despesas
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -290,9 +329,7 @@ fun DashboardScreen() {
                 )
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
-
         // Barra de progresso para receitas
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -308,9 +345,7 @@ fun DashboardScreen() {
                 )
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
-
         // Adicionar receita ou despesa
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -333,7 +368,6 @@ fun DashboardScreen() {
             }
         }
     }
-
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -415,7 +449,6 @@ fun DashboardScreen() {
         )
     }
 }
-
 @Composable
 fun SettingsScreen(context: Context) {
     var isDarkTheme by remember { mutableStateOf(false) }
@@ -431,7 +464,6 @@ fun SettingsScreen(context: Context) {
     ) {
         Text("Configurações", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(20.dp))
-
         // Seção para tema
         Text("Tema:")
         Row(
@@ -494,7 +526,6 @@ fun SettingsScreen(context: Context) {
         }
     }
 }
-
 @Composable
 @Preview(showBackground = true)
 fun PreviewHomeScreen() {
