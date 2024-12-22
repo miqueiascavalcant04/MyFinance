@@ -18,6 +18,7 @@ material = "1.7.6"
 material3 = "1.0.0"
 materialdatetimepicker = "4.2.3"
 mpandroidchart = "v3.1.0"
+mpandroidchartVersion = "v3.0.3"
 repo = "VERSION"
 sqlite = "2.4.0"
 ui = "1.7.6"
@@ -50,6 +51,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 materialdatetimepicker = { module = "com.github.wdullaer:MaterialDateTimePicker", version.ref = "materialdatetimepicker" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
+mpandroidchart-vv303 = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchartVersion" }
 repo = { module = "com.github.USER:REPO", version.ref = "repo" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 

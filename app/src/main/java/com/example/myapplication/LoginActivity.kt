@@ -63,16 +63,19 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {})
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Imagem de logo
         Image(
             painter = painterResource(id = R.drawable.r),
             contentDescription = null,
             modifier = Modifier
                 .size(100.dp)
                 .clip(RoundedCornerShape(50.dp))
+                .background(MaterialTheme.colors.primary.copy(alpha = 0.1f))
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Título de Login
         Text(
             "Login",
             style = MaterialTheme.typography.h5.copy(
@@ -83,6 +86,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {})
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Campo de E-mail
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -99,6 +103,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {})
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Campo de Senha
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -116,6 +121,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {})
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Botão de Login
         Button(
             onClick = {
                 if (email.isNotEmpty() && password.isNotEmpty()) {
@@ -146,6 +152,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}, onLoginFailed: () -> Unit = {})
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Texto para criar uma conta
         TextButton(onClick = {
             val intent = Intent(context, RegisterActivity::class.java)
             context.startActivity(intent)

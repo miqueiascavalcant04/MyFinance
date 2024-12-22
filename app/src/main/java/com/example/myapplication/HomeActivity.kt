@@ -1,10 +1,13 @@
 package com.example.myapplication
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,12 +18,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -42,12 +48,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,7 +69,6 @@ class HomeActivity : ComponentActivity() {
         }
     }
 }
-
 class FinanceViewModel : ViewModel() {
     var totalExpenses by mutableStateOf(1500f)
     var totalIncomes by mutableStateOf(3500f)
@@ -70,13 +79,11 @@ class FinanceViewModel : ViewModel() {
         expenses.getOrPut(category) { mutableListOf() }.add(amount)
         totalExpenses += amount
     }
-
     fun addIncome(category: String, amount: Float) {
         incomes.getOrPut(category) { mutableListOf() }.add(amount)
         totalIncomes += amount
     }
 }
-
 @Composable
 fun HomeScreen(context: Context) {
     var selectedItem by remember { mutableStateOf(0) }
@@ -100,6 +107,7 @@ fun HomeScreen(context: Context) {
                     0 -> HomePageScreen(userName)
                     1 -> DashboardScreen()
                     2 -> SettingsScreen(context)
+                    3 -> UserProfileScreen(userName)
                 }
             }
         }
@@ -107,10 +115,52 @@ fun HomeScreen(context: Context) {
 }
 
 @Composable
+fun UserProfileScreen(userName: String?) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Perfil do Usuário", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Nome: ${userName ?: "Usuário"}", style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Aqui você pode adicionar mais informações sobre o usuário, como email, foto, etc.
+        // Exemplo:
+        // Text("E-mail: ${userEmail}")
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Exemplo de ação (logout, editar perfil, etc.)
+        Text(
+            "Editar Perfil",
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                textDecoration = TextDecoration.Underline
+            ),
+            modifier = Modifier
+                .clickable {
+                    // Ação para editar o perfil
+                }
+                .padding(16.dp)
+        )
+    }
+}
+
+@Composable
 fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
+    val gradient = Brush.horizontalGradient(
+        colors = listOf(Color(0xFF2196F3), Color(0xFF00BCD4)) // Gradiente de roxo
+    )
+
     BottomNavigation(
-        backgroundColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary
+        backgroundColor = Color.Transparent, // Tornar o fundo transparente para o gradiente
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        modifier = Modifier.background(gradient) // Aplica o gradiente
     ) {
         BottomNavigationItem(
             icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
@@ -122,13 +172,19 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
             icon = { Icon(Icons.Filled.Dashboard, contentDescription = "Dashboard") },
             selected = selectedItem == 1,
             onClick = { onItemSelected(1) },
-            label = { Text("Dashboard") }
+            label = { Text("Dash") }
         )
         BottomNavigationItem(
             icon = { Icon(Icons.Filled.Settings, contentDescription = "Settings") },
             selected = selectedItem == 2,
             onClick = { onItemSelected(2) },
             label = { Text("Settings") }
+        )
+        BottomNavigationItem(
+            icon = { Icon(Icons.Filled.Person, contentDescription = "User") }, // Ícone para o perfil de usuário
+            selected = selectedItem == 3,
+            onClick = { onItemSelected(3) },
+            label = { Text("Perfil") }
         )
     }
 }
@@ -137,45 +193,56 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
 fun HomePageScreen(userName: String?) {
     val financeViewModel: FinanceViewModel = viewModel()
 
-    val balance = financeViewModel.totalIncomes - financeViewModel.totalExpenses
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Saudação ao usuário
         Text("Bem-vindo, ${userName ?: "Usuário"}!", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Resumo financeiro
-        Text("Resumo das suas finanças", style = MaterialTheme.typography.titleLarge)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Exibindo saldo total
-        Text("Saldo Total: R$ %.2f".format(balance), style = MaterialTheme.typography.headlineSmall)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Exibindo total de despesas
-        Text("Total de Despesas: R$ %.2f".format(financeViewModel.totalExpenses))
-
+        // Exemplo de um resumo rápido (última receita ou despesa)
+        Text("Última Receita: R$ %.2f".format(financeViewModel.totalIncomes), style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.height(8.dp))
-
-        // Exibindo total de receitas
-        Text("Total de Receitas: R$ %.2f".format(financeViewModel.totalIncomes))
+        Text("Última Despesa: R$ %.2f".format(financeViewModel.totalExpenses), style = MaterialTheme.typography.bodyLarge)
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Instruções ou ações rápidas, como visualizar o dashboard
-        Button(
-            onClick = { /* Ação para ir para o Dashboard */ },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text("Ver Dashboard")
-        }
+        // Botões para adicionar nova receita ou despesa
+        Text(
+            "Adicionar Receita",
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                textDecoration = TextDecoration.Underline
+            ),
+            modifier = Modifier
+                .clickable {
+                    // Ação para adicionar nova receita
+                }
+                .padding(16.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            "Adicionar Despesa",
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = MaterialTheme.colorScheme.error,
+                fontWeight = FontWeight.Bold,
+                textDecoration = TextDecoration.Underline
+            ),
+            modifier = Modifier
+                .clickable {
+                    // Ação para adicionar nova despesa
+                }
+                .padding(16.dp)
+        )
+
+        // Dica financeira (opcional)
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("Dica do dia: Faça um orçamento mensal para controlar seus gastos!", style = MaterialTheme.typography.bodyMedium)
     }
 }
 
@@ -191,6 +258,7 @@ fun DashboardScreen() {
     var isIncome by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var isCategorySelected by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -198,29 +266,48 @@ fun DashboardScreen() {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Dashboard", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            "Dashboard",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
         val totalExpenses = financeViewModel.expenses.values.flatten().sum()
         val totalIncomes = financeViewModel.incomes.values.flatten().sum()
 
         // Barra de progresso para despesas
-        Text("Total de Despesas: R$ %.2f".format(totalExpenses))
-        LinearProgressIndicator(
-            progress = { totalExpenses / (totalExpenses + totalIncomes) },
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.error,
-        )
+            elevation = 4.dp,
+            backgroundColor = MaterialTheme.colorScheme.errorContainer
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Total de Despesas: R$ %.2f".format(totalExpenses))
+                LinearProgressIndicator(
+                    progress = { if (totalExpenses + totalIncomes != 0f) totalExpenses / (totalExpenses + totalIncomes) else 0f },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Barra de progresso para receitas
-        Text("Total de Receitas: R$ %.2f".format(totalIncomes))
-        LinearProgressIndicator(
-            progress = { totalIncomes / (totalExpenses + totalIncomes) },
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.primary,
-        )
+            elevation = 4.dp,
+            backgroundColor = MaterialTheme.colorScheme.primaryContainer
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Total de Receitas: R$ %.2f".format(totalIncomes))
+                LinearProgressIndicator(
+                    progress = { if (totalExpenses + totalIncomes != 0f) totalIncomes / (totalExpenses + totalIncomes) else 0f },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -231,7 +318,7 @@ fun DashboardScreen() {
         ) {
             Button(
                 onClick = { isIncome = false; showDialog = true },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).height(48.dp),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text("Adicionar Despesa")
@@ -239,7 +326,7 @@ fun DashboardScreen() {
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = { isIncome = true; showDialog = true },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).height(48.dp),
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text("Adicionar Receita")
@@ -285,8 +372,14 @@ fun DashboardScreen() {
                         TextField(
                             value = amount,
                             onValueChange = { amount = it },
-                            label = { Text("Digite o valor") }
+                            label = { Text("Digite o valor") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                         )
+
+                        if (errorMessage.isNotEmpty()) {
+                            Text(text = errorMessage, color = Color.Red)
+                        }
                     }
                 }
             },
@@ -299,10 +392,13 @@ fun DashboardScreen() {
                         } else {
                             financeViewModel.addExpense(selectedCategory, amountValue)
                         }
+                        amount = ""
+                        isCategorySelected = false
+                        showDialog = false
+                        errorMessage = ""
+                    } else {
+                        errorMessage = "Por favor, insira um valor válido e selecione uma categoria."
                     }
-                    amount = ""
-                    isCategorySelected = false
-                    showDialog = false
                 }) {
                     Text("Salvar")
                 }
@@ -311,6 +407,7 @@ fun DashboardScreen() {
                 TextButton(onClick = {
                     isCategorySelected = false
                     showDialog = false
+                    errorMessage = ""
                 }) {
                     Text("Cancelar")
                 }
@@ -333,10 +430,9 @@ fun SettingsScreen(context: Context) {
         horizontalAlignment = Alignment.Start
     ) {
         Text("Configurações", style = MaterialTheme.typography.headlineMedium)
-
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Troca de tema
+        // Seção para tema
         Text("Tema:")
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -352,7 +448,7 @@ fun SettingsScreen(context: Context) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // E-mail
+        // Seção para email
         Text("E-mail:")
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -364,6 +460,7 @@ fun SettingsScreen(context: Context) {
             }
         }
 
+        // Campo para editar email
         if (isEditingEmail) {
             OutlinedTextField(
                 value = newEmail,
@@ -382,6 +479,19 @@ fun SettingsScreen(context: Context) {
                 Text("Salvar E-mail")
             }
         }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Botão de logout
+        Button(
+            onClick = {
+                val intent = Intent(context, LoginActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Sair", color = Color.White)
+        }
     }
 }
 
@@ -392,7 +502,6 @@ fun PreviewHomeScreen() {
         HomeScreen(context = LocalContext.current)
     }
 }
-
 fun getUserNameByEmail(context: Context, email: String): String {
     // Aqui você pode adicionar uma lógica para buscar o nome do usuário pelo e-mail
     return "João Silva" // Exemplo de nome retornado
